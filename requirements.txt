@@ -1,0 +1,17 @@
+pandas
+numpy
+matplotlib
+seaborn
+scikit-learn
+joblib
+fastapi
+uvicorn
+loguru
+pytest
+python-dotenv
+mlflow
+
+black
+isort
+ruff
+pre-commit
