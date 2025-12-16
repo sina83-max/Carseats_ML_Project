@@ -14,7 +14,7 @@ logger = get_logger()
 
 def train_regression_tree(
         data_path: str = "../data/Carseats.csv",
-        model_path: str = "models/tree_model.joblib"
+        model_path: str = "../models/tree_model.joblib"
 ):
     # Load Data
     df = load_carseats(data_path)
