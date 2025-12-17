@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Carseats Sales Prediction</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Carseats Sales Prediction</h1>
+        <form id="prediction-form">
+            <div id="feature-inputs"></div>
+
+            <label for="model-select">Select Model:</label>
+            <select id="model-select">
+                <option value="tree">Regression Tree</option>
+                <option value="pruned_tree">Pruned Tree</option>
+                <option value="bagging">Bagging</option>
+            </select>
+
+            <button type="submit">Predict</button>
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

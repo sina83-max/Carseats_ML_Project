@@ -2,20 +2,27 @@ import os
 
 import joblib
 import matplotlib.pyplot as plt
+import mlflow
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor, plot_tree
 
 from src.data_loader import load_carseats
 from src.logger import get_logger
+from src.plot_utils import plot_tree_model, plot_pred_vs_actual
 from src.preprocess import preprocess
+from src.tracking import ExperimentTracker
 
 logger = get_logger()
+
 
 def train_regression_tree(
         data_path: str = "../data/Carseats.csv",
         model_path: str = "../models/tree_model.joblib"
 ):
+    # Initialize Experiment Tracker
+    tracker = ExperimentTracker("carseats-sales-regression")
+
     # Load Data
     df = load_carseats(data_path)
     logger.info(f"Loaded dataset with the shape {df.shape}")
@@ -34,30 +41,53 @@ def train_regression_tree(
     )
     logger.info(f"Training set: {x_train.shape}, test set: {x_test.shape}")
 
-    # Initialize and train the tree
-    tree = DecisionTreeRegressor(random_state=42)
-    tree.fit(x_train, y_train)
-    logger.info("Regression tree trained")
+    with tracker.start_run(run_name="regression_tree"):
+        # Initialize and train the tree
+        tree = DecisionTreeRegressor(random_state=42)
+        tree.fit(x_train, y_train)
+        logger.info("Regression tree trained")
 
-    # Save model
-    os.makedirs(os.path.dirname(model_path), exist_ok=True)
-    joblib.dump(tree, model_path)
-    logger.info(f"Model saved to {model_path}")
+        # Evaluate
+        y_pred = tree.predict(x_test)
+        mse = mean_squared_error(y_test, y_pred)
+        logger.info(f"Test MSE: {mse:.4f}")
 
-    # Evaluate
-    y_pred = tree.predict(x_test)
-    mse = mean_squared_error(y_test, y_pred)
-    logger.info(f"Test MSE: {mse:.4f}")
+        # Log params
+        tracker.log_params(
+            {
+                "model": "decision_tree",
+                "random_state": 42,
+            }
+        )
 
-    # Plot tree
-    plt.figure(figsize=(20, 15))
-    plot_tree(tree, feature_names=X.columns, filled=True, fontsize=10)
-    plt.tight_layout()
-    os.makedirs("../reports/figures", exist_ok=True)
-    tree_plot_path = "../reports/figures/full_tree.png"
-    plt.savefig(tree_plot_path)
-    logger.info(f"Tree Plot saved to {tree_plot_path}")
-    plt.close()
+        # Log metrics
+        tracker.log_metrics(
+            {
+                "test_mse": mse
+            }
+        )
+
+        # Save model locally
+        os.makedirs(os.path.dirname(model_path), exist_ok=True)
+        joblib.dump(tree, model_path)
+        logger.info(f"Model saved to {model_path}")
+
+        # Log model to ML flow
+        tracker.log_model(tree, artifact_path="model")
+
+        # Plot tree
+        plot_tree_model(
+            tree,
+            feature_names=X.columns,
+            save_path="../reports/figures/tree_plot.png"
+        )
+
+        # Predicted vs Actual
+        plot_pred_vs_actual(
+            y_test,
+            y_pred,
+            save_path="../reports/figures/tree_pred_vs_actual.png"
+        )
 
     return mse
 
