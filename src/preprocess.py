@@ -14,9 +14,11 @@ from sklearn.preprocessing import LabelEncoder
 def preprocess(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
 
-    cat_cols = ["ShelveLoc", "Urban", "US"]
-    for col in cat_cols:
-        le = LabelEncoder()
-        df[col] = le.fit_transform(df[col])
+    # Encode ordinal categorical
+    df["ShelveLoc"] = df["ShelveLoc"].map({"Bad": 0, "Medium": 1, "Good": 2})
+
+    # Encode binary columns
+    df["Urban"] = df["Urban"].map({"Yes": 1, "No": 0})
+    df["US"] = df["US"].map({"Yes": 1, "No": 0})
 
     return df

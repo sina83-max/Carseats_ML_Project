@@ -14,7 +14,12 @@ def plot_tree_model(model, feature_names, save_path="../reports/figures/tree_plo
     """
     ensure_dir(os.path.dirname(save_path))
     plt.figure(figsize=(20, 15))
-    plot_tree(model, feature_names=feature_names, filled=True, fontsize=10)
+    plot_tree(model,
+              feature_names=feature_names,
+              filled=True,
+              fontsize=10,
+              max_depth=5
+    )
     plt.tight_layout()
     plt.savefig(save_path)
     plt.close()
