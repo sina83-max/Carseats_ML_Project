@@ -7,32 +7,32 @@ import os
 
 from api.routes import prediction
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # project root
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
 app = FastAPI(
     title="Carseats Sales Prediction API",
     description="Predict Carseats sales using Regression Tree, Pruned Tree, or Bagging",
     version="1.0.0",
 )
 
-# Enable CORS (for local frontend or other origins)
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change to your frontend URL in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include prediction API routes
-app.include_router(prediction.router)
+# API routes
+app.include_router(prediction.router, prefix="/api")  # all API routes under /api
 
-# Mount static files folder
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Serve SPA static files
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-# Serve single-page frontend at /predict
+# SPA entry point
+@app.get("/", include_in_schema=False)
 @app.get("/predict", include_in_schema=False)
 def serve_frontend():
-    return FileResponse(os.path.join("static", "index.html"))
-
-@app.get("/")
-def root():
-    return {"message": "Carseats Sales Prediction API is running."}
+    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
